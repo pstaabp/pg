@@ -86,5 +86,10 @@ is(gcd(10,9),1,"gcd: 2 relatively prime");
 
 is(gcd(10,20,30,40),10,"gcd: 4 multiples of 10");
 
+## isPrime
+is (isPrime(7),1,"isPrime: 7 is prime");
+is (isPrime(2),1,"isPrime: 2 is prime");
+is (isPrime(15),0,"isPrime: 15 is not prime");
+
 
 done_testing;
