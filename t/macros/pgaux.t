@@ -91,5 +91,13 @@ is (isPrime(7),1,"isPrime: 7 is prime");
 is (isPrime(2),1,"isPrime: 2 is prime");
 is (isPrime(15),0,"isPrime: 15 is not prime");
 
+## reduce
+## it would be nicer to directly compare the arrays
+my @my_arr = (3,4);
+my @res = reduce(15,20);
+ok ($my_arr[0] eq $res[0] , "reduce: correct numerator");
+ok ($my_arr[1] eq $res[1] , "reduce: correct denominator");
+
+
 
 done_testing;
