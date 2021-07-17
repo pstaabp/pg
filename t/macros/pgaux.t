@@ -6,31 +6,10 @@ BEGIN {
 	use Cwd qw/abs_path/;
         $main::test_dir = abs_path( dirname(__FILE__) );
 	$main::macros_dir  = dirname( dirname($main::test_dir) ) . '/macros';
-        #$main::lib_dir  = dirname( dirname($main::test_dir) ) . '/lib';
-        #die "WEBWORK_ROOT not found in environment.\n" unless $ENV{WEBWORK_ROOT};
-        #$main::webwork_dir = $ENV{WEBWORK_ROOT};
-        #$main::pg_dir = $ENV{PG_ROOT};
-        #$main::pg_dir = "$main::webwork_dir/../pg" unless $main::pg_dir;
 }
 
 use Data::Dump qw/dd/;
 use Test::More;
-
-#use lib "$main::lib_dir";
-#use lib "$main::webwork_dir/lib";
-#use lib "$main::pg_dir/lib";
-
-#use WeBWorK::CourseEnvironment;
-#use WeBWorK::PG;
-#use PGcore;
-
-#my $ce = WeBWorK::CourseEnvironment->new({webwork_dir => $main::webwork_dir, pg_dir => $main::pg_dir});
-
-
-#sub PG_restricted_eval {
-#	# my $self = shift;
-#	WeBWorK::PG::Translator::PG_restricted_eval(@_);
-#}
 
 sub loadMacros {
 	for my $file (@_) {
