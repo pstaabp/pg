@@ -21,4 +21,6 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - name: run a simple unit test
-        run: perl t/macros/pgaux.t
+        run: |
+          cpanm Data::Dump
+          perl t/macros/pgaux.t
