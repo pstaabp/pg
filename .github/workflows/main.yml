@@ -7,7 +7,7 @@ jobs:
   pgaux:
     runs-on: ubuntu-latest
     env:
-      WEBWORK_ROOT: .
+      WEBWORK_ROOT: webwork2
     container: perl:latest
     steps:
       - name: Checkout
