@@ -12,14 +12,17 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v2
+        with:
+          path: pg
       - name: Checkout tools repo
         uses: actions/checkout@v2
         with:
           repository: openwebwork/webwork2
+          path: webwork2
       - name: unit test for PGauxiliaryFunctions.pl
         run: |
           cpanm Data::Dump
-          prove t/macros/pgaux.t
+          prove pg/t/macros/pgaux.t
   Explore-GitHub-Actions:
     runs-on: ubuntu-latest
     steps:
@@ -34,3 +37,4 @@ jobs:
         run: |
           ls ${{ github.workspace }}
       - run: echo "🍏 This job's status is ${{ job.status }}."
+
