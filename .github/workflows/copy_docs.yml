@@ -25,4 +25,5 @@ jobs:
           destination-username: 'pstaabp'
           destination-repository: 'pg-docs'
           destination-directory: 'doc-src'
+          destination-branch: 'main'
           commit-email: 'peter.staab@gmail.com'
