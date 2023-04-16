@@ -23,7 +23,7 @@ jobs:
         with:
           source-files: 'doc/'
           destination-username: 'pstaabp'
-          destination-repository: 'pg-docs'
+          destination-repository: 'pstaabp/pg-docs'
           destination-directory: 'doc-src'
           destination-branch: 'main'
           commit-email: 'peter.staab@gmail.com'
