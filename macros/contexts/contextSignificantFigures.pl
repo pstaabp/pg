@@ -29,10 +29,10 @@ This is primarily for decimal numbers and keep track of signficant figures.   Wi
 a call to C<Real> will parse the number or string to keep track of significant figures. For example,
 
     $x = Real('10.45');;
-    $y = Real('10.1834');
+    $y = Real('37.1834');
 
 and these numbers will have 6 and 4 signficant figures respectively.  To query the number of significant
-figures, use the C<sigfigs> methods.  For example, C<$x->sigfigs> will return 6.
+figures, use the C<sigfigs> methods.  For example, C<$x->sigfigs> will return 4.
 
 The standard arithmetic operations +, -, *, / are defined for these and the result will have the correct
 number of significant figures. For example
@@ -99,6 +99,7 @@ sub new {
 		Value::Error("Can't convert %s to %s", Value::showClass($value), Value::showClass($self));
 	}
 	return $value->eval if Value::isFormula($value);
+
 	my $n = $opts{sigfigs};
 
 	if (!defined $n) {
@@ -222,44 +223,50 @@ sub sub {
 		$lman *= 10**($l->exp - $r->exp);
 	}
 
+	# Find the common place of the least signficant digit.
 	my $place = main::min($l->{sigfigs} - $l->{exp}, $r->{sigfigs} - $r->{exp}) + $exp - 1;
 	my $sf    = $place + 1;
 
 	my $vl = sprintf("%.${place}f", $lman);
 	my $vr = sprintf("%.${place}f", $rman);
-	my $v  = sprintf("%.${place}f", $vl - $vr) * 10**$exp;
 
-	# round the subtraction to the place as well since sometimes
-	# floating point number introduce repeated 9s at the end.
+	# Round the subtraction to the place as well since sometimes floating point number introduce repeated 9s at the end.
+	my $v  = sprintf("%.${place}f", $vl - $vr) * 10**$exp;
 	return $self->new("$v");
 }
 
-# Redefine multiplication.  Since the number is stored as an integer, an exponenent and
-# a number of significant figures, we use this information to calculate the product.
+# Redefine multiplication.  Use the product of the two numbers and set the number of significant
+# figures to the minimum of the two numbers.
 
 sub mult {
 	my ($self, $l, $r, $other) = Value::checkOpOrderWithPromote(@_);
 	return $self->new($l->value * $r->value, sigfigs => main::min($l->{sigfigs}, $r->{sigfigs}));
 }
 
-# Redefine division.  Since the number is stored as an integer, an exponenent and
-# a number of significant figures, we use this information to calculate the quotient.
-#
+# Redefine multiplication.  Use the quotient of the two numbers and set the number of significant
+# figures to the minimum of the two numbers.
 
 sub div {
 	my ($self, $l, $r, $other) = Value::checkOpOrderWithPromote(@_);
 	return $self->new($l->value / $r->value, sigfigs => main::min($l->{sigfigs}, $r->{sigfigs}));
 }
 
+# Redefine abs to return the absolute value of the number with the same number of sigfigs.
+
 sub abs {
 	my $self = shift;
 	return $self->make(CORE::abs($self->value), sigfigs => $self->{sigfigs});
 }
 
+# Redefined neg to handle the parsing of negative numbers with sigfigs.
+
 sub neg {
 	my $self = shift;
 	return $self->new(-$self->value, sigfigs => $self->{sigfigs});
 }
+
+# The compare method performs a comparsion on the value which is the exponential version of the number
+# as in '1.23E+02'.  The comparison only is true if the string version of the two numbers are exactly the same.
 
 sub compare {
 	my ($self, $l, $r) = Value::checkOpOrderWithPromote(@_);
@@ -274,7 +281,7 @@ sub Init {
 
 package context::SignificantFigures::Context;
 our @ISA = ('Parser::Context');
-
+use Data::Dumper;
 sub new {
 	my $self    = shift;
 	my $class   = ref($self) || $self;
@@ -286,6 +293,9 @@ sub new {
 	$context->constants->clear();
 	$context->{precedence}{SignifcantFigures} = $context->{precedence}{special};
 	$context->flags->set(limits => [ -1000, 1000, 1 ]);
+
+	print Dumper 'in context::SignificantFigures::Context';
+
 	return $context;
 }
 
@@ -297,12 +307,16 @@ sub checkSigFigs {
 
 package context::SignificantFigures::Number;
 our @ISA = ('Parser::Number');
-
+use Data::Dumper;
 sub new {
 	my $self  = shift;
 	my $class = ref($self) || $self;
 	my ($equation, $x, $ref) = @_;
 	my $context = $equation->{context};
+
+	print Dumper 'in context::SignificantFigures::Number';
+	print Dumper $x unless ref($x) eq 'context::SignificantFigures::Real';
+
 	$self = bless $self->SUPER::new($equation, $x, $ref), $class;
 	$self->{value} = Value::isValue($x)
 		&& $x->{sigfigs} ? $x->copy->inContext($context) : $self->Package('Real')->new($context, $self->{value_string});
