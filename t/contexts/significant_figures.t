@@ -385,10 +385,30 @@ subtest 'Division' => sub {
 
 };
 
-# subtest 'Significant Figures for integers' => sub {
-# 	# my $a1 = Compute('1.0 * 10^2');
-# 	my $a1 = Compute('1.0E+02');
-# 	is $a1->format('E'), '1.0E+02', '1.0 * 10^2 internally is 1.0E+02';
-# };
+subtest 'Significant Figures for integers' => sub {
+	# my $a1 = Compute('1.0 * 10^2');
+	my $a1 = Compute('1.0E+02');
+	is $a1->format('E'), '1.0E+02', '1.0 * 10^2 internally is 1.0E+02';
+};
+
+subtest 'Use Compute for operations' => sub {
+	my $a1 = Compute('4.078+2.3');
+	is $a1->format('E'), '6.4E+00', 'Check that addition in Compute is correct.';
+	my $a2 = Compute('4.078-2.3');
+	is $a2->format('E'), '1.8E+00', 'Check that subtraction in Compute is correct.';
+	my $a3 = Compute('4.03*2.3');
+	is $a3->format('E'), '9.3E+00', 'Check that multiplication in Compute is correct.';
+	my $a4 = Compute('4.03/2.3');
+	is $a4->format('E'), '1.8E+00', 'Check that division in Compute is correct.';
+};
+
+subtest 'Check the LimitedSignificantFigures context' => sub {
+	Context('LimitedSignificantFigures');
+	like dies { Compute('4.078+2.3') }, qr/Can't use '\+' in this context/, 'Check that + is not defined.';
+	like dies { Compute('4.078-2.3') }, qr/Can't use '\-' in this context/, 'Check that - is not defined.';
+	like dies { Compute('4.03*2.3') },  qr/Can't use '\*' in this context/, 'Check that * is not defined.';
+	like dies { Compute('4.03/2.3') },  qr/Can't use '\/' in this context/, 'Check that / is not defined.';
+	like dies { Compute('4.03^3') },    qr/Can't use '\^' in this context/, 'Check that ^ is not defined.';
+};
 
 done_testing();

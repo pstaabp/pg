@@ -18,10 +18,10 @@ and then set this context with
 
 or
 
-    Context('LimitedSignificantFigures');  # TO BE DONE
+    Context('LimitedSignificantFigures');
 
-where the latter context, you or the student are not allowed to perform any operations on
-any numbers.
+where the latter context, the student are not allowed to perform any operations on
+any numbers.  See below.
 
 This is primarily for decimal numbers and keep track of signficant figures.   With the context loaded,
 a call to C<Real> will parse the number or string to keep track of significant figures. For example,
@@ -39,13 +39,13 @@ number of significant figures. For example
 
 returns the value C<20.63>, where the first number is rounded to the hundredths place before adding.
 
-   $x * $y;
+    $x * $y;
 
 returns C<106.4> (with only 4 signficant figures, since one of them only has four).
 
 Finally, we can also perform subtraction as in
 
-   $x - $y;
+    $x - $y;
 
 however, subtraction can lose significant figures.  The answer to this is C<0.23>, so only 2 significant
 figures.
@@ -115,6 +115,16 @@ example,
 
 which has 6 significant figures.  If C<< $x->sigfigs(4) >>, then the result is the number '12.35', where
 rounding has been performed.
+
+=head3 LimitedSignificantFigures
+
+An additional available context is set with
+
+    Context('LimitedSignificantFigures');
+
+which disallows students from using any operators in their answers.  For instructors
+if the intent is to have your students understand Significant Figures, this is probably
+the context you want to use.
 
 =head2 SigFigNumber
 
@@ -335,6 +345,10 @@ package context::SignificantFigures;
 
 sub Init {
 	my $context = $main::context{SignificantFigures} = context::SignificantFigures::Context->new();
+	$context         = $main::context{LimitedSignificantFigures} = $context->copy;
+	$context->{name} = 'LimitedSignificantFigures';
+	$context->operators->undefine($context->operators->names);
+	$context->parens->undefine('|', '{', '[');
 }
 
 package context::SignificantFigures::Context;
