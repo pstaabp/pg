@@ -331,6 +331,24 @@ sub ROUND {
 	return sprintf("%.0E", $x + $d) - $d;
 }
 
+package context::SignificantFigures::BOP::parse;
+our @ISA = ("Parser::BOP");
+use Data::Dumper;
+sub _check {
+	my $self = @_;
+	my ($lop, $rop) = ($self->{lop}, $self->{rop});
+print Dumper 'in _check';
+print Dumper [$self, ref $lop, ref $rop];
+
+
+}
+
+sub _eval {
+	my ($self, $a, $b) = @_;
+	print Dumper [ref $self, $a->value, ref $b->value];
+	return $self->package('SignificantFigures')->new("$_[0]E$_[1]");
+}
+
 package context::SignificantFigures;
 
 sub Init {
@@ -351,6 +369,10 @@ sub new {
 	$context->constants->clear();
 	$context->{precedence}{SignifcantFigures} = $context->{precedence}{special};
 	$context->flags->set(limits => [ -1000, 1000, 1 ]);
+
+	$context->operators->add(
+		'x 10^' => { class => 'context::SignificantFigures::BOP::parse'}
+	);
 
 	return $context;
 }
@@ -385,5 +407,6 @@ sub perl {
 	return $self->SUPER::perl unless $value->{sigfigs};
 	return $self->context->Package('Real') . '->new(' . $value->value . ',' . $value->N . ')';
 }
+
 
 1;
