@@ -9,6 +9,7 @@
 			this.answerName = el.dataset.answerName ?? '';
 			this.buckets = [];
 			this.removeButtonText = el.dataset.removeButtonText ?? 'Remove';
+			this.allowReusingItems = el.dataset.allowReusingItems;
 
 			this.answerInput = el.parentElement.querySelector(`input[name="${this.answerName}"]`);
 			if (!this.answerInput) {
@@ -114,6 +115,7 @@
 			if (window.MathJax) {
 				MathJax.startup.promise = MathJax.startup.promise.then(() => MathJax.typesetPromise([this.el]));
 			}
+			this.allowReusingItems = this.bucketPool.allowReusingItems;
 
 			const options = {
 				group: { name: bucketPool.answerName },
