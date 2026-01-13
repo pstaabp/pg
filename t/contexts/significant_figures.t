@@ -163,7 +163,7 @@ subtest 'Create numbers with significant digits using Real' => sub {
 
 	my $a16 = Real('0.');
 	is $a16->format('E'), '0E+00', 'Check the format of 0.';
-	is $a16->sigfigs,     1,       '0. has 1 signficant figure';
+	is $a16->sigfigs,     1,       '0. has 1 significant figure';
 	is $a16->E,           0,       'The exponential of +00 is 0';
 	is $a16->string,      '0.',    'The string version is 0.';
 	is $a16->TeX,         '{0.}',  'The TeX version is {0.}';
@@ -384,11 +384,37 @@ subtest 'Division' => sub {
 	is $a2->E,           -1,         '1.0000/4.00 = 0.2500 = 2.50 * 10^(-1) (check exp)';
 
 };
+use Data::Dumper;
+subtest 'Significant Figures for integers' => sub {
+	my $a1 = Compute('1.0 x 10^2');
+	is $a1->format('E'), '1.0E+02', '1.0 x 10^2 internally is 1.0E+02';
+	is $a1->sigfigs,     2,         '1.0 x 10^2 has 2 significant figures.';
+	is $a1->E,           2,         '1.0 x 10^2 = 1.0 * 10^2 (check exp)';
 
-# subtest 'Significant Figures for integers' => sub {
-# 	# my $a1 = Compute('1.0 * 10^2');
-# 	my $a1 = Compute('1.0E+02');
-# 	is $a1->format('E'), '1.0E+02', '1.0 * 10^2 internally is 1.0E+02';
-# };
+	my $a2 = Compute('1.0x10^2');
+	is $a2->format('E'), '1.0E+02', '1.0 x 10^2 internally is 1.0E+02';
+	is $a2->sigfigs,     2,         '1.0 x 10^2 has 2 significant figures.';
+	is $a2->E,           2,         '1.0 x 10^2 = 1.0 * 10^2 (check exp)';
+
+	my $a3 = Compute('1.234 x 10^8');
+	is $a3->format('E'), '1.234E+08', '1.234 x 10^8 internally is 1.234E+08';
+	is $a3->sigfigs,     4,           '1.234 x 10^8 has 4 significant figures.';
+	is $a3->E,           8,           '1.234 x 10^8 = 1.234 * 10^8 (check exp)';
+
+	my $a4 = Compute('-1.23 x 10^-4');
+	is $a4->format('E'), '-1.23E-04', '-1.23 x 10^-4 internally is -1.23E-04';
+	is $a4->sigfigs,      3,          '-1.23 x 10^-4 has 3 significant figures.';
+	is $a4->E,           -4,          '-1.23 x 10^-4 = -1.23 * 10^-4 (check exp)';
+
+	my $a5 = Compute('1.23 * 10^3');
+	is $a5->format('E'), '1.23E+03', '1.23 * 10^3 internally is 1.23E+03';
+	is $a5->sigfigs,     3,          '1.23 * 10^3 has 3 significant figures.';
+	is $a5->E,           3,          '1.23 * 10^3 = 1.23 * 10^3 (check exp)';
+
+	my $a6 = Compute('-3.28*10^5');
+	is $a6->format('E'), '-3.28E+05', '-3.28 * 10^5 internally is -3.28E+05';
+	is $a6->sigfigs,     3,           '-3.28 * 10^5 has 3 significant figures.';
+	is $a6->E,           5,           '-3.28 * 10^5 = -3.28 * 10^5 (check exp)';
+};
 
 done_testing();

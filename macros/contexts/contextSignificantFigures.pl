@@ -220,12 +220,13 @@ sub string { shift->format('f') }
 
 sub TeX {
 	my $tex = shift->string;
-	$tex =~ s/E(?:(-)|\+)0*([1-9]\d?)/\\times 10^{$1$2}/;
+	# Capture the + or - in $1, then the digits in $2
+	$tex =~ s/E([-+])0*(\d+)/'\\times 10^{' . ($1 eq '-' ? '-' : '') . $2 . '}' /e;
 	return "{$tex}";
 }
 
 # Format the number in $value in either 'E' (exponential form) or 'f' decimal form using
-# $n signficant figures.
+# $n significant figures.
 
 # Example: format('E', '123.456', 6) returns 1.23456E+02
 # format('f', 1.23E-01, 3) returns '0.123'.
@@ -243,7 +244,7 @@ sub format {
 	return sprintf("%.${n}${f}" . ($n == 0 && $f eq 'f' ? '.' : ''), $value);
 }
 
-# Redefine addition.  The leftmost signifcant place in the result is needed to get the
+# Redefine addition.  The leftmost significant place in the result is needed to get the
 # correct value.
 
 sub add {
@@ -253,7 +254,7 @@ sub add {
 	return $self->new($value, sigfigs => main::max(0, $exp + $self->expFor($value, $exp)));
 }
 
-# Redefine subtraction.  The leftmost signifcant place in the result is needed to get the
+# Redefine subtraction.  The leftmost significant place in the result is needed to get the
 # correct value.
 
 sub sub {
@@ -333,20 +334,18 @@ sub ROUND {
 
 package context::SignificantFigures::BOP::parse;
 our @ISA = ("Parser::BOP");
-use Data::Dumper;
+
 sub _check {
-	my $self = @_;
+	my ($self) = @_;
 	my ($lop, $rop) = ($self->{lop}, $self->{rop});
-print Dumper 'in _check';
-print Dumper [$self, ref $lop, ref $rop];
-
-
 }
 
 sub _eval {
-	my ($self, $a, $b) = @_;
-	print Dumper [ref $self, $a->value, ref $b->value];
-	return $self->package('SignificantFigures')->new("$_[0]E$_[1]");
+	my ($self) = @_;
+	my $exp = $_[2]->string;
+	$exp = "+$exp" unless $exp < 0;
+	$exp =~ s/\.$//;
+	return context::SignificantFigures::Real->new("$_[1]E$exp");
 }
 
 package context::SignificantFigures;
@@ -367,12 +366,13 @@ sub new {
 	$context->{value}{Real}    = 'context::SignificantFigures::Real';
 	$context->functions->disable('All');
 	$context->constants->clear();
-	$context->{precedence}{SignifcantFigures} = $context->{precedence}{special};
+	$context->{precedence}{SignificantFigures} = $context->{precedence}{special};
 	$context->flags->set(limits => [ -1000, 1000, 1 ]);
 
-	$context->operators->add(
-		'x 10^' => { class => 'context::SignificantFigures::BOP::parse'}
-	);
+	$context->operators->add('x 10^' => { class => 'context::SignificantFigures::BOP::parse' });
+	$context->operators->add('x10^'  => { class => 'context::SignificantFigures::BOP::parse' });
+	$context->operators->add('* 10^' => { class => 'context::SignificantFigures::BOP::parse' });
+	$context->operators->add('*10^'  => { class => 'context::SignificantFigures::BOP::parse' });
 
 	return $context;
 }
@@ -407,6 +407,5 @@ sub perl {
 	return $self->SUPER::perl unless $value->{sigfigs};
 	return $self->context->Package('Real') . '->new(' . $value->value . ',' . $value->N . ')';
 }
-
 
 1;
