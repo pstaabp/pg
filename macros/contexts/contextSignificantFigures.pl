@@ -23,13 +23,13 @@ or
 where the latter context, you or the student are not allowed to perform any operations on
 any numbers.
 
-This is primarily for decimal numbers and keep track of signficant figures.   With the context loaded,
+This is primarily for decimal numbers and keep track of significant figures.   With the context loaded,
 a call to C<Real> will parse the number or string to keep track of significant figures. For example,
 
     $x = Real('10.45');
     $y = Real('37.1834');
 
-and these numbers will have 6 and 4 signficant figures respectively.  To query the number of significant
+and these numbers will have 6 and 4 significant figures respectively.  To query the number of significant
 figures, use the C<sigfigs> method.  For example, C<< $x->sigfigs >> will return 4.
 
 The standard arithmetic operations +, -, *, / are defined for these and the result will have the correct
@@ -41,7 +41,7 @@ returns the value C<20.63>, where the first number is rounded to the hundredths 
 
    $x * $y;
 
-returns C<106.4> (with only 4 signficant figures, since one of them only has four).
+returns C<106.4> (with only 4 significant figures, since one of them only has four).
 
 Finally, we can also perform subtraction as in
 
@@ -52,12 +52,12 @@ figures.
 
 =head2 Significant Figure Rules
 
-A reminder about signficant figures is that all non-zero digits are significant.  The rule about a zero's
+A reminder about significant figures is that all non-zero digits are significant.  The rule about a zero's
 significance depends on where it is in a number.
 
 =over
 
-=item * Zeros between any significant digits are signficant.  The zeros in 12.0034 are significant. There are 6
+=item * Zeros between any significant digits are significant.  The zeros in 12.0034 are significant. There are 6
 significant figures in this number.
 
 =item * Zeros to the left of a non-zero digit are not significant.  The zeros in 0.00123 are not signficant.
@@ -67,7 +67,7 @@ There are 3 significant figures in this number.
 significant. There are 6 significant figures in this number.
 
 =item * Zeros to the left of the decimal point and to the right of a non zero digit are not significant.  The
-zeros in 12300 are not significant. There are 3 significant figures in this number.  However, the presesence of
+zeros in 12300 are not significant. There are 3 significant figures in this number.  However, the presence of
 a significant zero changes the rule.  The zeros in 12300.0  are all significant because the rightmost 0 is
 significant and therefore the other zeros are significant.
 
@@ -116,13 +116,26 @@ example,
 which has 6 significant figures.  If C<< $x->sigfigs(4) >>, then the result is the number '12.35', where
 rounding has been performed.
 
+=head2 Flags
+
+The flag C<partial_credit> on the context will award partial credit for an answer that is correct to 
+within the given tolerance but the number of significant figures is not correct.  In addition, a
+warning is shown to the student.   The value of C<partial_credit> should be between 0 and 1. 
+
+For example,
+
+    Context('SignificantFigures')->flags->set(tolerance => 0.01, partial_credit => 0.6);
+
+will set the tolerance to 0.01 (this is the same as tolerance for reals) and the amount of 
+partial credit to give for the correct answer with wrong number of significant figures. 
+
 =head2 SigFigNumber
 
 The function C<SigFigNumber> will also create a SigFigNumber with the second argument the number of
 significant figures.  For example,
 
     $a = SigFigNumber(12.345);
-    $b = SigFigNumber(10000,3);
+    $b = SigFigNumber(10000, 3);
 
 will create a number with 5 and 3 significant figures respectively.
 
@@ -331,6 +344,32 @@ sub ROUND {
 	my $d = $s * 10**($e + 1);
 	return sprintf("%.0E", $x + $d) - $d;
 }
+
+
+# This method checks to see if the student answer is equal (in the Value::Real sense)
+# to the correct answer, but the incorrect number of significant figures.  
+# If so, show a warning and given partial credit. 
+
+sub cmp_postprocess {
+  my ($self, $ansHash) = @_;
+
+	return unless $self->getFlag('partial_credit') && $ansHash->score < 1; 
+
+	my $student = $ansHash->{student_value};
+	my $correct = $ansHash->{correct_value};
+
+	# Create Value::Real versions of the student and correct answer
+
+	my $student_real = Value::Real->new($student->string);
+	my $correct_real = Value::Real->new($correct->string);
+
+	if ($student_real == $correct_real && $student->sigfigs != $correct->sigfigs){
+		$ansHash->{ans_message}="Incorrect number of significant figures";
+		$ansHash->score($self->getFlag('partial_credit'));
+	}	
+}
+
+
 
 package context::SignificantFigures::BOP::parse;
 our @ISA = ("Parser::BOP");
