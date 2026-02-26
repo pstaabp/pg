@@ -417,4 +417,62 @@ subtest 'Significant Figures for integers' => sub {
 	is $a6->E,           5,           '-3.28 * 10^5 = -3.28 * 10^5 (check exp)';
 };
 
+subtest 'Significant Figures for partial credit' => sub {
+
+	# test an actual problem
+
+	my $source = <<~ 'END_SOURCE';
+		DOCUMENT();
+
+		loadMacros("PGstandard.pl","PGML.pl",'contextSignificantFigures.pl');
+		Context('SignificantFigures')->flags->set(tolerance => 0.01,partial_credit=>0.6);
+		$a=Real('123.0');
+		BEGIN_PGML
+		Enter the value [$a]
+
+		[_]{$a}
+		END_PGML
+		ENDDOCUMENT();
+	END_SOURCE
+
+	ok my $pg = WeBWorK::PG->new(
+		r_source       => \$source,
+		inputs_ref     => { AnSwEr0001 => '123.0' },
+		processAnswers => 1
+		),
+		'source string renders';
+
+	is $pg->{result}{score}, 1, 'correct answer is scored correctly';
+
+	my $pg2 = WeBWorK::PG->new(
+		r_source       => \$source,
+		processAnswers => 1,
+		inputs_ref     => { AnSwEr0001 => '123.00' },
+	);
+
+	is $pg2->{result}{score}, 0.6, 'reduced credit is scored correctly';
+	like $pg2->{answers}{AnSwEr0001}{ans_message}, qr/Incorrect number of significant figures/,
+		'Answer processed showing message.';
+
+	my $pg3 = WeBWorK::PG->new(
+		r_source       => \$source,
+		processAnswers => 1,
+		inputs_ref     => { AnSwEr0001 => '1.230 * 10^2' },
+	);
+
+	is $pg3->{result}{score}, 1, 'scientific notation is correct.';
+
+	my $pg4 = WeBWorK::PG->new(
+		r_source       => \$source,
+		processAnswers => 1,
+		inputs_ref     => { AnSwEr0001 => '1.23 * 10^2' },
+	);
+
+	is $pg4->{result}{score}, 0.6, 'scientific notation is scored with correct partial credit.';
+
+	like $pg4->{answers}{AnSwEr0001}{ans_message}, qr/Incorrect number of significant figures/,
+		'Answer processed showing message.';
+
+};
+
 done_testing();
