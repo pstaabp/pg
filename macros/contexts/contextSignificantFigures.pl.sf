@@ -323,28 +323,24 @@ sub ROUND {
 	return sprintf("%.0E", $x + $d) - $d;
 }
 
+
 sub cmp_postprocess {
-  my $self = shift;
-  my $aHash = shift;
+	my ($self, $ansHash) = @_;
 
-  my $osa=$aHash->{original_student_ans};
-#Hack to replace '10^' syntax with 'E'
-	$osa =~ s/(\ \*10\^)/E/;     #a *10^b
-	$osa =~ s/(\ \*\ 10\^)/E/;   #a * 10^b
-	$osa =~ s/(\*\ 10\^)/E/;     #a* 10^b
-	$osa =~ s/(\*10\^)/E/; 			 #a*10^b
+	my $student = $ansHash->{student_value};
+	my $correct = $ansHash->{correct_value};
+	my $student_real = Value::Real->new($student->string);
+	my $correct_real = Value::Real->new($correct->string);
 
-	my $sa=$self->new($osa);
-  my $ssf=$sa->sigfigs;
-  my $csf=$self->sigfigs;
-  my $score=$aHash->score;
+  my $ssf=$student->sigfigs;
+  my $csf=$correct->sigfigs;
+  my $score=$ansHash->score;
   if($score==1 && $ssf != $csf){
-    $aHash->{ans_message}="Incorrect number of significant figures";
-    $pen=$self->getFlag(penalty);
-   $aHash->score($pen);
+    $ansHash->{ans_message}="Incorrect number of significant figures";
+    $partial=$self->getFlag("partial_credit");
+   $ansHash->score($partial);
   }
 }
-
 
 package context::SignificantFigures::BOP::parse;
 our @ISA = ("Parser::BOP");
