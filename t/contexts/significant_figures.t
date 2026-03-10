@@ -2,7 +2,7 @@
 
 =head1 SignificantFigure context
 
-Test the SignifcantFigure context defined in contextSignificantFigure.pl.
+Test the SignificantFigure context defined in contextSignificantFigure.pl.
 
 =cut
 
