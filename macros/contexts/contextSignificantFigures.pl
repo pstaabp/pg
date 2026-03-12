@@ -340,6 +340,17 @@ sub neg {
 	return $self->new(-$self->value, sigfigs => $self->{sigfigs});
 }
 
+# This promotes non-Sig fig numbers that are used in expressions to a sig fig
+# with infinite precision.
+
+sub promote {
+	my $self    = shift;
+	my $context = (Value::isContext($_[0]) ? shift : $self->context);
+	my $value   = (scalar(@_)              ? shift : $self);
+	return $value->inContext($context) if Value::isValue($value) && $value->{sigfigs};
+	return $self->new($context, $value, sigfigs => 'inf');
+}
+
 # The compare method determines that the values are equal with the same number of significant figures.
 # This also handles inequalities as in other Reals.
 
@@ -376,6 +387,15 @@ sub ROUND {
 
 	my $d = $s * 10**($e + 1);
 	return sprintf("%.0E", $x + $d) - $d;
+}
+
+# The preview_latex_string isn't correct, so in the processing pipeline, fix it.
+
+sub cmp_preprocess {
+	my ($self, $ansHash) = @_;
+	$tex = $ansHash->{student_ans};
+	$tex =~ s/E([-+])0*(\d+)/'\\times 10^{' . ($1 eq '-' ? '-' : '') . $2 . '}' /e;
+	$ansHash->{preview_latex_string} = $tex;
 }
 
 # This method checks to see if the student answer is equal (in the Value::Real sense)

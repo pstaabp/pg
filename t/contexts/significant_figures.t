@@ -384,8 +384,8 @@ subtest 'Division' => sub {
 	is $a2->E,           -1,         '1.0000/4.00 = 0.2500 = 2.50 * 10^(-1) (check exp)';
 
 };
-use Data::Dumper;
-subtest 'Significant Figures for integers' => sub {
+
+subtest 'Significant Figures for Numbers in Scientific Notation' => sub {
 	my $a1 = Compute('1.0 x 10^2');
 	is $a1->format('E'), '1.0E+02', '1.0 x 10^2 internally is 1.0E+02';
 	is $a1->sigfigs,     2,         '1.0 x 10^2 has 2 significant figures.';
@@ -487,7 +487,20 @@ subtest 'Significant Figures for partial credit' => sub {
 	like $pg5->{answers}{AnSwEr0001}{ans_message},
 		qr/Correct number of significant figures, but the value is not correct/,
 		'Answer processed showing message.';
+};
 
+# The following is used the test if an expression (like an average) has a non sig fig
+# perl number to get promoted to a sig fig with infinite precision.
+
+sub ave {
+	my $sum = 0;
+	$sum += $_ for (@_);
+	return $sum / @_;
+}
+
+subtest 'Check promotion rules' => sub {
+	is ave(3.11,       10.49,       6.72),       6.77333333333333, 'check perl averages';
+	is ave(Real(3.11), Real(10.49), Real(6.72)), 6.773,            'check average with sig fig';
 };
 
 done_testing();
