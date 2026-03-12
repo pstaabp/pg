@@ -425,7 +425,10 @@ subtest 'Significant Figures for partial credit' => sub {
 		DOCUMENT();
 
 		loadMacros("PGstandard.pl","PGML.pl",'contextSignificantFigures.pl');
-		Context('SignificantFigures')->flags->set(tolerance => 0.01,partial_credit=>0.6);
+		Context('SignificantFigures')->flags->set(tolerance => 0.001, 
+			partial_incorrect_sf=>0.6,
+			partial_sf_within_tolerance => 0.8,
+			);
 		$a=Real('123.0');
 		BEGIN_PGML
 		Enter the value [$a]
@@ -471,6 +474,18 @@ subtest 'Significant Figures for partial credit' => sub {
 	is $pg4->{result}{score}, 0.6, 'scientific notation is scored with correct partial credit.';
 
 	like $pg4->{answers}{AnSwEr0001}{ans_message}, qr/Incorrect number of significant figures/,
+		'Answer processed showing message.';
+
+	my $pg5 = WeBWorK::PG->new(
+		r_source       => \$source,
+		processAnswers => 1,
+		inputs_ref     => { AnSwEr0001 => '123.1' },
+	);
+
+	is $pg5->{result}{score}, 0.8, 'Answer has correct sf but incorrect value.';
+
+	like $pg5->{answers}{AnSwEr0001}{ans_message},
+		qr/Correct number of significant figures, but the value is not correct/,
 		'Answer processed showing message.';
 
 };
