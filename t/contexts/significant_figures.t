@@ -28,6 +28,7 @@ sub expon  { context::SignificantFigures::Real->expFor($_[0], 0) }
 sub FORMAT { context::SignificantFigures::Real->format(@_) }
 
 subtest 'Test the helper functions.' => sub {
+
 	is ROUND(1.335,    3), '1.34',   'Round 1.335 to 3 sig figs.';
 	is ROUND(12.34567, 5), '12.346', 'Round 12.346 to 5 sig figs.';
 	is ROUND(1.005,    3), '1.01',   'Check that rounding up is working with non-perfect values';
@@ -53,6 +54,7 @@ subtest 'Test the helper functions.' => sub {
 };
 
 subtest 'Create numbers with significant digits using Real' => sub {
+
 	ok my $a1 = Real('0012.34'), 'Creating the number 0012.34';
 	is $a1->sigfigs, 4, '0012.34 has 4 significant figures.';
 	is $a1->E,       1, '0012.34 written as 1.234 * 10^1';
@@ -170,6 +172,7 @@ subtest 'Create numbers with significant digits using Real' => sub {
 };
 
 subtest 'Create numbers by specifying significant figures' => sub {
+
 	my $a1 = Real(2, sigfigs => 3);
 	is $a1->format('E'), '2.00E+00', '2 with 3 sig figs is 2.00';
 	is $a1->string,      '2.00',     'Correct string output.';
@@ -188,6 +191,7 @@ subtest 'Create numbers by specifying significant figures' => sub {
 };
 
 subtest 'Check for out of bounds significant figures' => sub {
+
 	my $a1 = Real('1');
 	like dies { Real('5', sigfigs => 20); }, qr/The number of significant figures must be less than 16/,
 		'Try to create a real with more than 16 sigfigs.';
@@ -206,6 +210,7 @@ subtest 'Check for out of bounds significant figures' => sub {
 };
 
 subtest 'Creating numbers with significant figures using Compute' => sub {
+
 	my $a1 = Compute('12.345');
 	is $a1->format('E'), '1.2345E+01', 'Ensure that the internal storage of 12.345 is correct.';
 	is $a1->string,      '12.345',     'Ensure that the string output of 12.345 is correct.';
@@ -369,7 +374,6 @@ subtest 'Subtracting two constants' => sub {
 	is $a11->format('E'), '1.02E+00', '1.03 - .005 = 1.02 (check format)';
 	is $a11->sigfigs,     3,          '1.03 - .005 = 1.02 (check sigfigs)';
 	is $a11->E,           0,          '1.03 - .005 = 1.02 (check exp)';
-
 };
 
 subtest 'Division' => sub {
@@ -386,16 +390,13 @@ subtest 'Division' => sub {
 };
 
 subtest 'Significant Figures for integers' => sub {
-	# my $a1 = Compute('1.0 * 10^2');
 	my $a1 = Compute('1.0E+02');
 	is $a1->format('E'), '1.0E+02', '1.0 * 10^2 internally is 1.0E+02';
 };
 
 subtest 'Significant Figures for partial credit' => sub {
-
 	# test an actual problem
-
-	my $source = <<~ 'END_SOURCE';
+	my $source = <<~'END_SOURCE';
 		DOCUMENT();
 		loadMacros("PGstandard.pl","PGML.pl",'contextSignificantFigures.pl');
 		Context('SignificantFigures')->flags->set(tolerance => 0.001, 
@@ -414,11 +415,9 @@ subtest 'Significant Figures for partial credit' => sub {
 		inputs_ref     => { AnSwEr0001 => '123.0' },
 		processAnswers => 1
 		),
-		'source string renders';
+		'Problem with given source string renders correctly.';
 
-	# print Dumper $pg->{result};
-
-	is $pg->{result}{score}, 1, 'correct answer is scored correctly';
+	is $pg->{result}{score}, 1, 'The correct answer is scored correctly.';
 
 	my $pg2 = WeBWorK::PG->new(
 		r_source       => \$source,
@@ -428,7 +427,7 @@ subtest 'Significant Figures for partial credit' => sub {
 
 	is $pg2->{result}{score}, 0.6, 'reduced credit is scored correctly';
 	like $pg2->{answers}{AnSwEr0001}{ans_message}, qr/Incorrect number of significant figures/,
-		'Answer processed showing message.';
+		'An answer with incorrect significant figures is processed showing message.';
 
 	my $pg3 = WeBWorK::PG->new(
 		r_source       => \$source,
@@ -436,7 +435,7 @@ subtest 'Significant Figures for partial credit' => sub {
 		inputs_ref     => { AnSwEr0001 => '1.230 * 10^2' },
 	);
 
-	is $pg3->{result}{score}, 1, 'scientific notation is correct.';
+	is $pg3->{result}{score}, 1, 'The answer given in scientific notation is processed correctly.';
 
 	my $pg4 = WeBWorK::PG->new(
 		r_source       => \$source,
@@ -444,10 +443,11 @@ subtest 'Significant Figures for partial credit' => sub {
 		inputs_ref     => { AnSwEr0001 => '1.23 * 10^2' },
 	);
 
-	is $pg4->{result}{score}, 0.6, 'scientific notation is scored with correct partial credit.';
+	is $pg4->{result}{score}, 0.6,
+		'The answer with incorrect number of sig. figs is given in sci. not. is scored with correct partial credit.';
 
 	like $pg4->{answers}{AnSwEr0001}{ans_message}, qr/Incorrect number of significant figures/,
-		'Answer processed showing message.';
+		'The answer in scientific notation and incorrect number of signficant figures is processed showing message.';
 
 	my $pg5 = WeBWorK::PG->new(
 		r_source       => \$source,
@@ -455,7 +455,8 @@ subtest 'Significant Figures for partial credit' => sub {
 		inputs_ref     => { AnSwEr0001 => '123.1' },
 	);
 
-	is $pg5->{result}{score}, 0.8, 'Answer has correct sf but incorrect value.';
+	is $pg5->{result}{score}, 0.8,
+		'The answer with correct number of significant figures but incorrect but close value is processed correctly.';
 
 	like $pg5->{answers}{AnSwEr0001}{ans_message},
 		qr/Correct number of significant figures, but the value is not correct/,
