@@ -1,0 +1,75 @@
+## DESCRIPTION
+## Computations of numbers with units and specified significant figures.
+## ENDDESCRIPTION
+
+## DBsubject(WeBWorK)
+## DBchapter(WeBWorK tutorial)
+## DBsection(PGML tutorial 2015)
+## Date(08/01/2026)
+## Institution(Fitchburg State University)
+## Author(Peter Staab)
+## MO(1)
+## KEYWORDS('significant figures')
+
+#:% name = Significant Figures with Units
+#:% type = [technique, sample]
+#:% category = [misc]
+#:% see_also = [SignificantFigures.pg, SignificantFiguresFlags.pg]
+
+#:% section = preamble
+#: The macros `contextSignificantFigures.pl` and `contextUnits.pl` need to
+#: be added to the `loadMacros`.
+DOCUMENT();
+
+loadMacros(
+    'PGstandard.pl',                'PGML.pl',
+    'contextSignificantFigures.pl', 'contextUnits.pl',
+    'PGcourse.pl'
+);
+
+#:% section = setup
+#:
+#: Since units and Significant Figures are both to be used, start with the
+#: `Context()` function at the top.  For this example, volume units are to be
+#: used, hence the argument for the `withUnitsFor` method.  See
+#: PODLINK('contextUnits.pl') for details on all available unit categories.
+#:
+#: Since random numbers are used in this, first the number is calculated using
+#: `random` and `Real`.  On the construction of the number with `Real`, the
+#: option `sigfigs` is used to specify 4 significant figures.  This is to
+#: ensure we have 4 significant figures even if the random number chosen was
+#: 135 or 150 for example.
+#:
+#: The units are included with the `Compute` function.   For the sum, any
+#: valid answer in any unit is accepted, such as in liters or cups. 
+#: However, if the answer is desired in a particular unit, add
+#: `->cmp(sameUnits => 1)` to the answer.  Note, if it is desired to ask a
+#: question about the volume in a different unit, say quarts, define
+#: `$c2 = $c->toUnits('qt');` and then for the answer, call
+#: `$c2->cmp(sameUnits => 1)`.
+
+Context(context::Units::extending("SignificantFigures")->withUnitsFor('volume')
+);
+
+$a1 = Real(random(100, 200, 0.1),  sigfigs => 4);
+$b1 = Real(random(50,  90,  0.01), sigfigs => 4);
+
+$a = Compute("$a1 ml");
+$b = Compute("$b1 ml");
+$c = $a + $b;
+
+#:% section = statement
+BEGIN_PGML
+A lab technician has a beaker with [$a] of water.  She adds [$b] to the beaker.  
+Using the proper number of significant figures, what is the total 
+amount in the beaker? 
+
+total volume: [_]{$c}
+END_PGML
+
+#:% section = solution
+BEGIN_PGML_SOLUTION
+Solution explanation goes here.
+END_PGML_SOLUTION
+
+ENDDOCUMENT();

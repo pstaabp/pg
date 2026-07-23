@@ -1,0 +1,88 @@
+## DESCRIPTION
+## Shows the affect of flags on numbers with Significant Figures.
+## ENDDESCRIPTION
+
+## DBsubject(WeBWorK)
+## DBchapter(WeBWorK tutorial)
+## DBsection(PGML tutorial 2015)
+## Date(08/01/2026)
+## Institution(Fitchburg State University)
+## Author(Peter Staab)
+## MO(1)
+## KEYWORDS('significant figures')
+
+#:% name = Significant Figures Flags
+#:% type = [technique, sample]
+#:% category = [misc]
+#:% see_also = [SignificantFigures.pg, SignificantFiguresUnits.pg]
+
+#:% section = preamble
+#: The `contextSignificantFigures.pl` macro needs to be added to the `loadMacros`.
+DOCUMENT();
+
+loadMacros(
+    'PGstandard.pl',                'PGML.pl',
+    'contextSignificantFigures.pl', 'PGcourse.pl'
+);
+
+#:% section = setup
+#: The SignificantFigures context has flags that can both give students partial
+#: credit for close answers as well as those with incorrect number of
+#: significant figures.
+#:
+#: - Set `partial_incorrect_sf` to a number between 0 and 1 for partial credit for a
+#: close answer with incorrect number of significant figures.  If this is set
+#: and a student has an answer that is close (within tolerance), however the number
+#: of significant figures is wrong a message will be shown and the student will
+#: receive the flag's value for the answer.
+#: - `partial_sf_within_tolerance` is a number between 0 and 1 for partial credit
+#: for an answer that is within tolerance with the correct number of significant
+#: figures.
+#:
+Context('SignificantFigures')->flags->set(
+    tolerance                   => 0.001,
+    partial_incorrect_sf        => 0.6,
+    partial_sf_within_tolerance => 0.8
+);
+
+$a   = Compute('10.251');
+$b   = Compute('10.40');
+$sum = $a + $b;
+
+$diff = $b - $a;
+
+#:% section = statement
+#:
+#: An alternative to setting the flags in the context at the top of
+#: the problem, an individual answer can set the flag in the `cmp`
+#: method as shown for the difference of the numbers.
+
+BEGIN_PGML
+
+Find the following operations with proper significant figures: 
+
+* [`[$a] +[$b] = `] [_]{$sum}
+
+* [`[$b] - [$a] = `] [_]{$diff->cmp(partial_incorrect_sf => 0.2)}
+
+Notes:
+
+- The answer of 20.65 for the sum will receive full credit.
+- The answers 20.66 or 20.64 for the sum are within 0.1% of the answer
+(tolerance) and correct number of significant figures, so receives 0.8
+for the problem.
+- An answer like 20.651 or 20.649 for the sum is within 0.1% of the
+answer (tolerance) but the incorrect number of significant figures so
+the student receives 0.6 for the problem.
+- For the difference a number like 0.150001 will give a message that
+there are an incorrect number of signficant figures and will receive
+0.2 for this part. The flag inside the `cmp` method overrides the
+flag set at the top.
+END_PGML
+
+#:% section = solution
+BEGIN_PGML_SOLUTION
+Solution explanation goes here.
+END_PGML_SOLUTION
+
+ENDDOCUMENT();

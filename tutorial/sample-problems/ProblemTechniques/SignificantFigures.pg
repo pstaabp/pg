@@ -1,0 +1,76 @@
+## DESCRIPTION
+## Computations of numbers with specified significant figures.
+## ENDDESCRIPTION
+
+## DBsubject(WeBWorK)
+## DBchapter(WeBWorK tutorial)
+## DBsection(PGML tutorial 2015)
+## Date(08/01/2026)
+## Institution(Fitchburg State University)
+## Author(Peter Staab)
+## MO(1)
+## KEYWORDS('significant figures')
+
+#:% name = Significant Figures
+#:% type = [technique, sample]
+#:% category = [misc]
+#:% see_also = [SignificantFiguresUnits.pg, SignificantFiguresFlags.pg]
+
+#:% section = preamble
+#: The `contextSignificantFigures.pl` macro needs to be added to the `loadMacros`.
+DOCUMENT();
+
+loadMacros(
+    'PGstandard.pl',                'PGML.pl',
+    'contextSignificantFigures.pl', 'PGcourse.pl'
+);
+
+#:% section = setup
+#: Start with the `Context('SignificantFigures');` to interpret numbers in
+#: `Compute` or student answers as numbers with given significant figures.
+#: See PODLINK('contextSignificantFigures.pl') for details about how
+#: the number of significant figures is calculated and how computations between
+#: them determine the result.
+#:
+#: If `Compute` is used with a number, the number of significant figures will
+#: be automatically calculated.  Alternatively, to set the number of significant
+#: figures, use `Real` with the option `sigfigs => $n` for some positive number
+#: or 'inf'.  
+#: 
+#: For example, the number 1000 with 2 significant figures can be created with
+#: `Real(1000, sigfigs => 2)`. Alteratively, scientific notation can be used 
+#: as in `1.00 * 10^3`. 
+#:
+#: The method `sigfigs` can be used to get or set the number of significant
+#: figures.  If a number `$c` is defined, then setting it to say 4 significant
+#: figures is performed with `$c->sigfigs(4)`.  Without an argument, the number
+#: of significant figures is returned.
+#:
+#: There is also a related context `LimitedSignificantFigures` that disallows
+#: any operations.  This is similar to other `Limited` contexts. 
+
+Context('SignificantFigures');
+
+$a = Compute('10.251');
+$b = Compute('10.40');
+
+#:% section = statement
+BEGIN_PGML
+Determine the number of significant figures for the following:
+
+* [` [$a] `]: number of significant figures [_]{$a->sigfigs}
+* [` [$b] `]: number of significant figures [_]{$b->sigfigs}
+
+Find the following operations with proper significant figures: 
+
+* [`[$a] +[$b] = `] [_]{$a+$b}
+* [`[$b] -[$a] = `] [_]{$b-$a}
+* [` [$a] \cdot [$b] = `] [_]{$a * $b}
+END_PGML
+
+#:% section = solution
+BEGIN_PGML_SOLUTION
+Solution explanation goes here.
+END_PGML_SOLUTION
+
+ENDDOCUMENT();
