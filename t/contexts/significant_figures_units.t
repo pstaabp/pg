@@ -42,4 +42,65 @@ subtest 'Test a number with length units and significant figures' => sub {
 	ok $a == Compute('4.036 ft'), 'Value in feet (a little off, but when converted to m is correct)';
 };
 
+subtest 'Test an actual problem' => sub {
+
+	my $source = <<~'END_SOURCE';
+		DOCUMENT();
+
+		loadMacros("PGstandard.pl","PGML.pl",'contextSignificantFiguresUnits.pl');
+
+		Context('SignificantFiguresUnits')->withUnitsFor('mass');
+
+		Context()->flags->set(
+					tolerance                   => 0.01,
+					partial_incorrect_sf        => 0.6,
+					partial_sf_within_tolerance => 0.8,
+					);
+
+		$a = Compute("123.0 g");
+		$b = Compute("45.3 g");
+		$c = $a+$b;
+
+		BEGIN_PGML
+		A lab technician has a beaker with [$a] of water.  She adds [$b] to the beaker.  Using the proper number of significant figures, what is the total amount in the beaker? 
+
+		[_]{$c}
+		END_PGML
+
+		ENDDOCUMENT();
+	END_SOURCE
+
+	ok my $pg = WeBWorK::PG->new(
+		r_source       => \$source,
+		inputs_ref     => { AnSwEr0001 => '168.3 g' },
+		processAnswers => 1
+		),
+		'source string renders';
+
+	is $pg->{result}{score}, 1, 'correct answer is scored correctly';
+
+	my $pg2 = WeBWorK::PG->new(
+		r_source       => \$source,
+		inputs_ref     => { AnSwEr0001 => '168.30 g' },
+		processAnswers => 1
+	);
+
+	is $pg2->{result}{score}, 0.6, 'check deduction for wrong number of significant figures.';
+	like $pg2->{answers}{AnSwEr0001}{ans_message}, qr/Incorrect number of significant figures/,
+		'Answer processed showing message.';
+
+	my $pg3 = WeBWorK::PG->new(
+		r_source       => \$source,
+		inputs_ref     => { AnSwEr0001 => '168.2 g' },
+		processAnswers => 1
+	);
+
+	is $pg3->{result}{score}, 0.8,
+		'check deduction for right number of significant figures, but answer within tolerance.';
+	like $pg3->{answers}{AnSwEr0001}{ans_message},
+		qr/Correct number of significant figures, but the value is not correct/,
+		'Answer processed showing message.';
+
+};
+
 done_testing;
