@@ -1446,7 +1446,9 @@ sub cmp_defaults { () }
 sub cmp_postprocess {
 	my ($self, $ans) = @_;
 	my $student = $ans->{student_value};
-	return unless defined($student) && $student->type eq 'Unit';
+	warn 'in Units::cmp_postprocess';
+	warn $student->type;
+	return unless defined($student) && $student->type =~ /Unit/;
 	return                                              if $ans->{ans_message};
 	$self->cmp_Error($ans, "Your units aren't correct") if $self->fString ne $student->fString;
 	return                                              if $ans->{score} != 1 || !$self->getFlag('exactUnits');
@@ -1725,6 +1727,8 @@ sub cmp_defaults { () }
 sub cmp_postprocess {
 	my ($self, $ans) = @_;
 	my $student = $ans->{student_value};
+	warn 'in NumberWithUnits::cmp_postprocess';
+	warn $student->type;
 	return unless defined($student) && $student->type eq $context::Units::NUNIT;
 	return                                              if $ans->{ans_message};
 	$self->cmp_Error($ans, "Your units aren't correct") if $self->fString ne $student->fString;
