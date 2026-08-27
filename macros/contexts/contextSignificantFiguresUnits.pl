@@ -10,23 +10,26 @@ sub _contextSignificantFiguresUnits_init {
 package context::SignificantFiguresUnits::NumberWithUnit;
 our @ISA = ('context::Units::NumberWithUnit');
 
-# call the postprocess for handling error messages and flags. 
-# This needs to be called for the SignificantFigure and Units separately. 
+# call the postprocess for handling error messages and flags.
+# This needs to be called for the SignificantFigure and Units separately.
 
 sub cmp_postprocess {
 	my ($self, $ansHash) = @_;
-	warn $ansHash->{student_value}->type;
-	warn ref $self->unit;
-	$self->SUPER::cmp_postprocess($ansHash);
-	# $self->unit->cmp_postprocess($ansHash);
-
-	# Since the current $ansHash has the correct and student value as the NumberWithUnits type
-	# pass in just the number (SignificantFigure) to the postprocess. 
 	my $correct_value = $ansHash->{correct_value};
 	my $student_value = $ansHash->{student_value};
+
+	warn 'in sigfigunit::cmp_postprocess';
+	warn ref $correct_value;
+	warn ref $student_value;
+	warn ref $self->unit;
+	$self->SUPER::cmp_postprocess($ansHash);
+	return if $ansHash->{ans_message};
+
+	# Since the current $ansHash has the correct and student value as the NumberWithUnits type
+	# pass in just the number (SignificantFigure) to the postprocess.
 	$ansHash->{correct_value} = $correct_value->number;
 	$ansHash->{student_value} = $student_value->number;
-	$self->SUPER::cmp_postprocess($ansHash);
+	$correct_value->number->cmp_postprocess($ansHash);
 	$ansHash->{correct_value} = $correct_value;
 	$ansHash->{student_value} = $student_value;
 }

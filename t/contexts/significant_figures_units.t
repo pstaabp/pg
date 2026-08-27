@@ -19,19 +19,19 @@ use Value;
 require Parser::Legacy;
 import Parser::Legacy;
 
-loadMacros('contextSignificantFigures.pl', 'contextUnits.pl');
+loadMacros('contextSignificantFiguresUnits.pl');
 
-my $context = context::Units::extending("SignificantFigures")->withUnitsFor('length');
+# my $context = context::Units::extending("SignificantFigures")->withUnitsFor('length');
 
 subtest 'Setup a basic Unit context extending SignificantFigures' => sub {
-	Context($context);    # make it current without copying
-	ok(defined $context && ref($context), 'Got a context object');
-	is $context->{name}, 'Units-SignificantFigures', 'Context has correct name';
+	ok my $context = Context('SignificantFiguresUnits');
+	ok defined $context && ref($context), 'Got a context object';
+	is $context->{name}, 'SignificantFiguresUnits', 'Context has correct name';
 };
 
 subtest 'Test a number with length units and significant figures' => sub {
-	Context($context);
-	ok my $a = Compute("123.0 cm"), 'Compute handles a unit.';
+	Context('SignificantFiguresUnits')->withUnitsFor('length');
+	ok my $a = Compute("123.0 cm"), 'Compute with number and a unit.';
 
 	is $a, '123.0 cm', 'Value stringifies with units and sig figs';
 	ok $a == Compute('1.230 m'), 'Value stringifies with correct unit conversion and sig figs';
@@ -42,9 +42,9 @@ subtest 'Test a number with length units and significant figures' => sub {
 	ok $a == Compute('4.036 ft'), 'Value in feet (a little off, but when converted to m is correct)';
 };
 
-subtest 'redo with new macro' => {
+subtest 'redo with new macro' => sub {
 	Context('SignificantFiguresUnits')->withUnitsFor('length');
-	ok my $a = Compute('123.0 cm'), 'Compute handles a unit.';
+	ok my $a = Compute('123.0 cm'), 'Compute with a number and a unit.';
 
 	is $a, '123.0 cm', 'Value stringifies with units and sig figs';
 	ok $a == Compute('1.230 m'), 'Value stringifies with correct unit conversion and sig figs';

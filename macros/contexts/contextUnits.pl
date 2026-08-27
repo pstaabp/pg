@@ -1452,6 +1452,7 @@ sub cmp_postprocess {
 	return                                              if $ans->{ans_message};
 	$self->cmp_Error($ans, "Your units aren't correct") if $self->fString ne $student->fString;
 	return                                              if $ans->{score} != 1 || !$self->getFlag('exactUnits');
+
 	if ($self->uString(1) ne $student->uString(1)) {
 		$self->cmp_Error($ans,
 			"Your answer is correct, but the units aren't in the right order or misuse negative powers");
