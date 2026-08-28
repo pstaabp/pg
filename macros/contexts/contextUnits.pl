@@ -1446,10 +1446,13 @@ sub cmp_defaults { () }
 sub cmp_postprocess {
 	my ($self, $ans) = @_;
 	my $student = $ans->{student_value};
-	return unless defined($student) && $student->type eq 'Unit';
+	warn 'in Units::cmp_postprocess';
+	warn $student->type;
+	return unless defined($student) && $student->type =~ /Unit/;
 	return                                              if $ans->{ans_message};
 	$self->cmp_Error($ans, "Your units aren't correct") if $self->fString ne $student->fString;
 	return                                              if $ans->{score} != 1 || !$self->getFlag('exactUnits');
+
 	if ($self->uString(1) ne $student->uString(1)) {
 		$self->cmp_Error($ans,
 			"Your answer is correct, but the units aren't in the right order or misuse negative powers");
@@ -1725,6 +1728,8 @@ sub cmp_defaults { () }
 sub cmp_postprocess {
 	my ($self, $ans) = @_;
 	my $student = $ans->{student_value};
+	warn 'in NumberWithUnits::cmp_postprocess';
+	warn $student->type;
 	return unless defined($student) && $student->type eq $context::Units::NUNIT;
 	return                                              if $ans->{ans_message};
 	$self->cmp_Error($ans, "Your units aren't correct") if $self->fString ne $student->fString;
